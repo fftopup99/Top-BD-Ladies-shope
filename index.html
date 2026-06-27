@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Box Investment</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'SolaimanLipi',Arial,sans-serif}
+body{background:#0f172a;color:#fff;min-height:100vh;padding-bottom:80px}
+.header{background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:20px;text-align:center;position:sticky;top:0;z-index:10}
+.header h1{font-size:20px}
+.user-info{font-size:12px;margin-top:5px;opacity:0.9}
+.logout{position:absolute;top:15px;right:15px;background:rgba(255,255,255,0.2);border:none;padding:8px 15px;border-radius:20px;color:white;font-size:12px;cursor:pointer}
+.balance-box{background:#1e293b;margin:15px;border-radius:15px;padding:20px}
+.balance-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:10px}
+.balance-card{background:#334155;padding:15px;border-radius:12px;text-align:center}
+.balance-label{font-size:12px;color:#94a3b8}
+.balance-amount{font-size:22px;font-weight:bold;margin-top:5px}
+.profit{color:#10b981}
+.deposit{color:#3b82f6}
+.btn-group{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+.btn{padding:14px;border:none;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer}
+.btn-green{background:#10b981;color:white}
+.btn-red{background:#ef4444;color:white}
+.btn-blue{background:#6366f1;color:white}
+.container{padding:15px}
+.section-title{font-size:16px;font-weight:bold;margin:20px 0 15px 0}
+.box-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.box{background:#1e293b;border-radius:15px;overflow:hidden;border:2px solid #334155}
+.box img{width:100%;height:120px;object-fit:cover}
+.box-body{padding:12px}
+.box-price{font-size:18px;font-weight:bold;color:#fbbf24;text-align:center;margin-bottom:8px}
+.buy-btn{width:100%;padding:10px;background:#6366f1;border:none;border-radius:8px;color:white;font-weight:bold;cursor:pointer;font-size:13px}
+.buy-btn:disabled{background:#475569;cursor:not-allowed}
+.active-box{background:#1e293b;margin:15px;border-radius:15px;padding:15px}
+.active-item{background:#334155;padding:12px;border-radius:10px;margin-bottom:10px}
+.active-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.timer{color:#fbbf24;font-weight:bold;font-size:12px}
+.days-left{color:#10b981;font-size:12px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-content{background:#1e293b;border-radius:15px;padding:25px;max-width:400px;width:100%}
+.input{width:100%;padding:14px;background:#334155;border:2px solid #475569;border-radius:10px;color:white;font-size:15px;margin-bottom:12px}
+.label{font-size:13px;color:#94a3b8;margin-bottom:5px;display:block}
+.auth-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;z-index:2000}
+.auth-box{background:#1e293b;border-radius:20px;padding:30px;max-width:380px;width:90%}
+.auth-box h2{text-align:center;margin-bottom:10px;color:#fbbf24}
+.auth-tabs{display:flex;gap:10px;margin-bottom:20px}
+.auth-tab{flex:1;padding:12px;border:none;border-radius:8px;background:#334155;color:#94a3b8;cursor:pointer;font-weight:bold}
+.auth-tab.active{background:#6366f1;color:white}
+.history-item{padding:10px 0;border-bottom:1px solid #334155;font-size:13px;display:flex;justify-content:space-between}
+.nagad-box{background:#ff6600;padding:15px;border-radius:10px;text-align:center;font-weight:bold;margin-bottom:15px}
+.loading{display:none;text-align:center;padding:20px}
+.spinner{border:4px solid #334155;border-top:4px solid #10b981;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 10px}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+.support-btn{position:fixed;bottom:20px;left:20px;background:#10b981;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 15px rgba(16,185,129,0.4);cursor:pointer;z-index:999}
+.support-popup{display:none;position:fixed;bottom:90px;left:20px;background:#1e293b;border:2px solid #10b981;border-radius:15px;padding:20px;max-width:280px;z-index:1001;box-shadow:0 8px 25px rgba(0,0,0,0.5)}
+.support-popup h3{color:#10b981;margin-bottom:10px;font-size:15px}
+.support-popup p{font-size:14px;margin-bottom:15px;line-height:1.6}
+.back-btn{width:100%;padding:10px;background:#475569;border:none;color:white;border-radius:8px;cursor:pointer;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+<div class="auth-box">
+<h2>📦 Box Investment</h2>
+<div class="auth-tabs">
+<button type="button" class="auth-tab active" id="regTab" onclick="switchTab('reg')">Register</button>
+<button type="button" class="auth-tab" id="loginTab" onclick="switchTab('login')">Login</button>
+</div>
+
+<div id="regForm">
+<input class="input" type="text" id="regName" placeholder="আপনার নাম">
+<input class="input" type="tel" id="regPhone" placeholder="01XXXXXXXXX" maxlength="11">
+<input class="input" type="password" id="regPass" placeholder="Password">
+<button type="button" class="btn btn-green" onclick="register()">Register</button>
+</div>
+
+<div id="loginForm" style="display:none">
+<input class="input" type="tel" id="loginPhone" placeholder="01XXXXXXXXX" maxlength="11">
+<input class="input" type="password" id="loginPass" placeholder="Password">
+<button type="button" class="btn btn-blue" onclick="login()">Login</button>
+</div>
+
+</div>
+</div>
+
+<div id="mainApp" style="display:none">
+<div class="header">
+<button type="button" class="logout" onclick="logout()">Logout</button>
+<h1>Box Investment BD</h1>
+<div class="user-info" id="userInfo"></div>
+</div>
+
+<div class="balance-box">
+<div class="balance-grid">
+<div class="balance-card">
+<div class="balance-label">Deposit Balance</div>
+<div class="balance-amount deposit" id="depositBal">৳0</div>
+</div>
+<div class="balance-card">
+<div class="balance-label">Profit Balance</div>
+<div class="balance-amount profit" id="profitBal">৳0</div>
+</div>
+</div>
+<div class="btn-group">
+<button type="button" class="btn btn-green" onclick="openModal('add')">+ Add Fund</button>
+<button type="button" class="btn btn-red" onclick="openModal('withdraw')">Withdraw</button>
+</div>
+</div>
+
+<div class="container">
+<div class="section-title">🔥 Buy Box</div>
+<div class="box-grid" id="boxGrid"></div>
+</div>
+
+<div class="active-box">
+<div class="section-title">📊 Active Products</div>
+<div id="activeList"></div>
+</div>
+
+<div class="active-box">
+<div class="section-title">📜 History</div>
+<div id="historyList"></div>
+</div>
+
+<div class="support-btn" onclick="openSupport()">💬</div>
+<div class="support-popup" id="supportPopup">
+<h3>Support</h3>
+<p>আপনার যেকোনো সমস্যা সমাধান এর জন্য ওয়াটচাপ করুন +60 11-2319 2967 ধন্যবাদ ✅</p>
+<button class="back-btn" onclick="closeSupport()">Back</button>
+</div>
+
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-content">
+<div id="modalForm">
+<h3 id="modalTitle" style="margin-bottom:15px"></h3>
+<div id="addFundForm" style="display:none">
+<div class="nagad-box">01819811370 নগদ পারসোনাল সেন্ড মানি করে নিচে বাক্স ৪ ডিজিট দিন 👇</div>
+<label class="label">2. সেন্ড মানির লাস্ট ৪ ডিজিট দিন</label>
+<input class="input" type="number" id="last4" placeholder="1234" maxlength="4">
+<label class="label">3. কত টাকা সেন্ড করছেন এমাউন্ট দিন</label>
+<input class="input" type="number" id="amount" placeholder="Min 500 TK">
+<button type="button" class="btn btn-green" onclick="confirmAddFund()">Confirm</button>
+</div>
+<div id="withdrawForm" style="display:none">
+<label class="label">1. Withdraw এমাউন্ট দিন</label>
+<input class="input" type="number" id="wAmount" placeholder="Min 500 TK">
+<label class="label">2. আপনার নগদ পারসোনাল নাম্বার দিন</label>
+<input class="input" type="tel" id="wNumber" placeholder="01XXXXXXXXX" maxlength="11">
+<button type="button" class="btn btn-red" onclick="confirmWithdraw()">Confirm</button>
+</div>
+<button type="button" onclick="closeModal()" style="width:100%;margin-top:8px;padding:12px;background:#475569;border:none;color:white;border-radius:10px;cursor:pointer">Cancel</button>
+</div>
+
+<div class="loading" id="loadingBox">
+<div class="spinner"></div>
+<div>Processing... 3 সেকেন্ড</div>
+</div>
+</div>
+</div>
+
+<script>
+const BOX_PRICES = [500,700,900,1500,2000,2500,2700,480,5000,10000];
+// Random Product Photo - সবার জন্য একই 10 টা ছবি
+const BOX_IMAGES = [
+'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300&h=300&fit=crop', // Box 500
+'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=300&h=300&fit=crop', // Box 700
+'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop', // Box 900
+'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=300&h=300&fit=crop', // Box 1500
+'https://images.unsplash.com/photo-1506629905607-d405b7a0065c?w=300&h=300&fit=crop', // Box 2000
+'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop', // Box 2500
+'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=300&h=300&fit=crop', // Box 2700
+'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=300&h=300&fit=crop', // Box 480
+'https://images.unsplash.com/photo-1612444530582-fc66183b16f7?w=300&h=300&fit=crop', // Box 5000
+'https://images.unsplash.com/photo-1591047139829-d91aecb25a09?w=300&h=300&fit=crop' // Box 10000
+];
+const ADMIN_WHATSAPP = '8801819811370';
+
+var currentPhone = null;
+var users = JSON.parse(localStorage.getItem('boxUsers')||'{}');
+var modalType = '';
+
+window.onload = function(){
+var saved = localStorage.getItem('boxCurrentPhone');
+if(saved && users[saved]){
+currentPhone = saved;
+document.getElementById('authScreen').style.display='none';
+document.getElementById('mainApp').style.display='block';
+loadData();
+setInterval(checkProfits, 30000);
+}
+}
+
+function switchTab(mode){
+if(mode=='reg'){
+document.getElementById('regTab').classList.add('active');
+document.getElementById('loginTab').classList.remove('active');
+document.getElementById('regForm').style.display='block';
+document.getElementById('loginForm').style.display='none';
+}else{
+document.getElementById('loginTab').classList.add('active');
+document.getElementById('regTab').classList.remove('active');
+document.getElementById('regForm').style.display='none';
+document.getElementById('loginForm').style.display='block';
+}
+}
+
+function register(){
+var name = document.getElementById('regName').value.trim();
+var phone = document.getElementById('regPhone').value.trim();
+var pass = document.getElementById('regPass').value.trim();
+if(name.length<3){alert('নাম কমপক্ষে 3 অক্ষর দিন');return;}
+if(phone.length!==11 || phone.substring(0,2)!=='01'){alert('সঠিক 11 ডিজিটের নাম্বার দিন');return;}
+if(pass.length<4){alert('Password কমপক্ষে 4 অক্ষর দিন');return;}
+if(users[phone]){alert('❌ এই নাম্বার দিয়ে আগেই একাউন্ট আছে');return;}
+users[phone] = {name:name,phone:phone,password:pass,deposit:0,profit:0,boxes:[],history:[]};
+localStorage.setItem('boxUsers', JSON.stringify(users));
+alert('✅ Register Success! এখন Login করুন');
+switchTab('login');
+document.getElementById('loginPhone').value = phone;
+}
+
+function login(){
+var phone = document.getElementById('loginPhone').value.trim();
+var pass = document.getElementById('loginPass').value.trim();
+if(!users[phone]){alert('❌ এই নাম্বারের একাউন্ট নেই');return;}
+if(users[phone].password!= pass){alert('❌ ভুল Password');return;}
+currentPhone = phone;
+localStorage.setItem('boxCurrentPhone', phone);
+document.getElementById('authScreen').style.display='none';
+document.getElementById('mainApp').style.display='block';
+loadData();
+setInterval(checkProfits, 30000);
+}
+
+function logout(){
+localStorage.removeItem('boxCurrentPhone');
+location.reload();
+}
+
+function loadData(){
+var u = users[currentPhone];
+document.getElementById('userInfo').innerText = u.name + ' | ' + u.phone;
+document.getElementById('depositBal').innerText = '৳'+u.deposit.toLocaleString();
+document.getElementById('profitBal').innerText = '৳'+u.profit.toLocaleString();
+var html = '';
+for(var i=0; i<BOX_PRICES.length; i++){
+var price = BOX_PRICES[i];
+var bought = false;
+for(var j=0; j<u.boxes.length; j++){if(u.boxes[j].price==price && u.boxes[j].active){bought=true; break;}}
+html += '<div class="box"><img src="'+BOX_IMAGES[i]+'"><div class="box-body"><div class="box-price">৳'+price+'</div><button type="button" class="buy-btn" '+(bought?'disabled':'')+' onclick="buyBox('+price+','+i+')">'+(bought?'Already Active':'Buy Now')+'</button></div></div>';
+}
+document.getElementById('boxGrid').innerHTML = html;
+loadActive();
+loadHistory();
+}
+
+function buyBox(price, imgIndex){
+var u = users[currentPhone];
+if(u.deposit < price){alert('Deposit Balance নেই। Add Fund করুন।');return;}
+for(var j=0; j<u.boxes.length; j++){if(u.boxes[j].price==price && u.boxes[j].active){alert('এই Box টা আগে থেকেই Active আছে');return;}}
+u.deposit -= price;
+u.boxes.push({price:price,img:BOX_IMAGES[imgIndex],startTime:Date.now(),lastClaim:Date.now(),days:0,active:true});
+u.history.unshift({type:'Buy Box '+price+' TK',amount:'-৳'+price,time:new Date().toLocaleString('bn-BD')});
+saveUsers();
+loadData();
+alert('✅ Box কেনা হয়েছে। 24 ঘন্টা পর 5% প্রফিট পাবা');
+}
+
+function checkProfits(){
+if(!currentPhone) return;
+var u = users[currentPhone];
+var now = Date.now();
+var changed = false;
+for(var i=0; i<u.boxes.length; i++){
+var box = u.boxes[i];
+if(box.active){
+var hoursPassed = (now - box.lastClaim) / (1000*60*60);
+if(hoursPassed >= 24 && box.days < 30){
+var profit = (box.price * 5) / 100;
+u.profit += profit;
+box.lastClaim = now;
+box.days += 1;
+u.history.unshift({type:'Profit '+box.price+' TK',amount:'+৳'+profit.toFixed(2),time:new Date().toLocaleString('bn-BD')});
+changed = true;
+if(box.days >= 30){
+box.active = false;
+u.history.unshift({type:'Box Complete',amount:'30 দিন শেষ',time:new Date().toLocaleString('bn-BD')});
+}
+}}}
+if(changed){saveUsers();loadData();}
+}
+
+function loadActive(){
+var u = users[currentPhone];
+var active = [];
+for(var i=0; i<u.boxes.length; i++){if(u.boxes[i].active){active.push(u.boxes[i]);}}
+if(active.length==0){document.getElementById('activeList').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px">কোনো Active Box নেই</div>';return;}
+var html = '';
+for(var i=0; i<active.length; i++){
+var box = active[i];
+var hoursPassed = (Date.now() - box.lastClaim) / (1000*60*60);
+var nextIn = Math.max(0, 24 - Math.floor(hoursPassed));
+var daysLeft = 30 - box.days;
+html += '<div class="active-item"><div class="active-top"><span>Box: ৳'+box.price+'</span><span class="days-left">'+daysLeft+' দিন বাকি</span></div><div class="timer">Next Profit: '+nextIn+'h পর | 5% = ৳'+(box.price*0.05).toFixed(2)+'</div></div>';
+}
+document.getElementById('activeList').innerHTML = html;
+}
+
+function loadHistory(){
+var u = users[currentPhone];
+if(u.history.length==0){document.getElementById('historyList').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px">কোনো History নেই</div>';return;}
+var html = '';
+for(var i=0; i<Math.min(30,u.history.length); i++){
+var h = u.history[i];
+html += '<div class="history-item"><span>'+h.type+'</span><span>'+h.amount+'</span></div>';
+}
+document.getElementById('historyList').innerHTML = html;
+}
+
+function openModal(type){
+modalType = type;
+document.getElementById('modal').style.display='flex';
+document.getElementById('modalForm').style.display='block';
+document.getElementById('loadingBox').style.display='none';
+if(type=='add'){
+document.getElementById('modalTitle').innerText='Add Fund via Nagad';
+document.getElementById('addFundForm').style.display='block';
+document.getElementById('withdrawForm').style.display='none';
+}else{
+document.getElementById('modalTitle').innerText='Withdraw Profit';
+document.getElementById('addFundForm').style.display='none';
+document.getElementById('withdrawForm').style.display='block';
+}
+}
+
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+function confirmAddFund(){
+var last4 = document.getElementById('last4').value.trim();
+var amt = parseFloat(document.getElementById('amount').value);
+if(last4.length!=4){alert('সঠিক 4 ডিজিট দিন');return;}
+if(!amt || amt < 500){alert('Minimum 500 TK');return;}
+document.getElementById('modalForm').style.display='none';
+document.getElementById('loadingBox').style.display='block';
+setTimeout(function(){
+var u = users[currentPhone];
+u.deposit += amt;
+u.history.unshift({type:'Add Fund '+last4,amount:'+৳'+amt,time:new Date().toLocaleString('bn-BD')});
+saveUsers();
+loadData();
+closeModal();
+alert('✅ '+amt+' TK Balance Add হয়েছে');
+document.getElementById('last4').value='';
+document.getElementById('amount').value='';
+}, 3000);
+}
+
+function confirmWithdraw(){
+var amt = parseFloat(document.getElementById('wAmount').value);
+var number = document.getElementById('wNumber').value.trim();
+var u = users[currentPhone];
+if(!amt || amt < 500){alert('❌ Minimum Withdraw 500 TK');return;}
+if(number.length!==11 || number.substring(0,2)!=='01'){alert('❌ সঠিক 11 ডিজিটের Nagad নাম্বার দিন');return;}
+if(u.profit < amt){alert('❌ Profit Balance নেই');return;}
+u.profit -= amt;
+u.history.unshift({type:'Withdraw '+amt+' TK to '+number,amount:'-৳'+amt,time:new Date().toLocaleString('bn-BD')});
+saveUsers();
+loadData();
+closeModal();
+alert('আপনার withdraw request পেন্ডিং আছে সর্বচ্চো ৫ ঘন্টার ভিতর successful হবে Thank you 💞💞 ✅');
+var msg = encodeURIComponent('Withdraw Request\nName: '+u.name+'\nPhone: '+u.phone+'\nAmount: '+amt+' TK\nNagad: '+number+'\nTime: '+new Date().toLocaleString('bn-BD'));
+window.open('https://wa.me/'+ADMIN_WHATSAPP+'?text='+msg, '_blank');
+document.getElementById('wAmount').value='';
+document.getElementById('wNumber').value='';
+}
+
+function openSupport(){document.getElementById('supportPopup').style.display='block';}
+function closeSupport(){document.getElementById('supportPopup').style.display='none';}
+
+function saveUsers(){localStorage.setItem('boxUsers', JSON.stringify(users));}
+</script>
+</body>
+</html>
